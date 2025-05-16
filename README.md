@@ -1,2 +1,2 @@
-# pdfRenamer
-rename Corus contract PDFs
+# PDF Renamer Tool
+Rename Corus campaign contract PDFs
