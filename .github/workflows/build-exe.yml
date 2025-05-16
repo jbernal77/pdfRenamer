@@ -33,3 +33,4 @@ jobs:
       with:
         name: pdf-renamer-tool
         path: dist/pyqt5_rename_pdfs_tool_icon_taskbar.exe
+
