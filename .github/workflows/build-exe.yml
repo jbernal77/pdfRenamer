@@ -29,5 +29,5 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: pdf-renamer-tool
-        path: dist/pdf_renamer_tool_v2.exe
+        path: dist/pdf_renamer_tool_v2/pdf_renamer_tool_v2.exe
 
