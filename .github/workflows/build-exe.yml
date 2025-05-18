@@ -1,4 +1,4 @@
-name: Build EXE with Icon (PyInstaller + PyQt5)
+l:bashname: Build EXE with Icon (PyInstaller + PyQt5)
 
 on:
   push:
@@ -23,7 +23,9 @@ jobs:
         pip install pyinstaller PyQt5 pdfplumber
 
     - name: Build EXE with icon
-      run: pyinstaller \
+      shell: bash
+      run: |
+        pyinstaller \
           --noconfirm \
           --onefile \
           --windowed \
