@@ -23,20 +23,11 @@ jobs:
         pip install pyinstaller PyQt5 pdfplumber
 
     - name: Build EXE with icon
-      shell: bash
-      run: |
-        pyinstaller \
-          --noconfirm \
-          --onefile \
-          --windowed \
-          --icon=pdf_renamer_icon.ico \
-          --add-data "pdf_renamer_icon.ico;." \
-          --collect-all PyQt5 \
-          pdf_renamer_tool_v2.py
+      run: pyinstaller pdf_renamer_tool_v2.spec
 
     - name: Upload EXE as artifact
       uses: actions/upload-artifact@v4
       with:
-        name: pdf-renamer-tool-v2
+        name: pdf-renamer-tool
         path: dist/pdf_renamer_tool_v2.exe
 
