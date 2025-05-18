@@ -37,6 +37,6 @@ jobs:
     - name: Upload EXE as artifact
       uses: actions/upload-artifact@v4
       with:
-        name: pdf-renamer-tool
+        name: pdf-renamer-tool-v2
         path: dist/pdf_renamer_tool_v2.exe
 
