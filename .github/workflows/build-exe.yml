@@ -32,7 +32,7 @@ jobs:
           --icon=pdf_renamer_icon.ico \
           --add-data "pdf_renamer_icon.ico;." \
           --collect-all PyQt5 \
-          pyqt5_rename_pdfs_tool_icon_taskbar.py
+          pdf_renamer_tool_v2.py
 
     - name: Upload EXE as artifact
       uses: actions/upload-artifact@v4
