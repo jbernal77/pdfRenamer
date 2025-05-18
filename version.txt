@@ -17,7 +17,7 @@ VSVersionInfo(
           '040904B0',
           [
             StringStruct('CompanyName', 'Jonathan Bernal'),
-            StringStruct('FileDescription', 'PDF Renamer Tool v2'),
+            StringStruct('FileDescription', 'PDF Renamer Tool v2 by Jonathan Bernal'),
             StringStruct('FileVersion', '2.0.0.0'),
             StringStruct('InternalName', 'pdf_renamer_tool_v2.exe'),
             StringStruct('OriginalFilename', 'pdf_renamer_tool_v2.exe'),
