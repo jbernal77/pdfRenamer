@@ -24,9 +24,7 @@ jobs:
 
     - name: Build EXE with icon
       run: |
-        pyinstaller --noconfirm --windowed ^
-          --icon=pdf_renamer_icon.ico ^
-          pyqt5_rename_pdfs_tool_icon_taskbar.py
+        pyinstaller --noconfirm --windowed --icon=pdf_renamer_icon.ico pyqt5_rename_pdfs_tool_icon_taskbar.py
 
     - name: Upload EXE as artifact
       uses: actions/upload-artifact@v4
