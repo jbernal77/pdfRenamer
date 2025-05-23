@@ -99,7 +99,9 @@ class PDFRenamerThread(QThread):
                                 if j < len(lines):
                                     next_line = strip_after_label(lines[j].strip(), cutoffs)
                                     if next_line and not any(next_line.startswith(label) for label in cutoffs):
-                                        title_raw += " " + next_line
+                                        if not title_raw.endswith('-'):
+                                            title_raw += ' '
+                                        title_raw += next_line
                             title = title_raw.strip()
                             break
 
