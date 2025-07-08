@@ -13,7 +13,7 @@ pyqt5_binaries, pyqt5_datas, pyqt5_hiddenimports = collect_all('PyQt5')
 
 # Analysis: include main script, icon, version, and all PyQt5 data
 a = Analysis(
-    ['pdf_renamer_tool_v2.2py'],
+    ['pdf_renamer_tool_v2.2.py'],
     pathex=[],
     binaries=pyqt5_binaries,
     datas=[('pdf_renamer_icon.ico', '.'), ('version.txt', '.')] + pyqt5_datas,
