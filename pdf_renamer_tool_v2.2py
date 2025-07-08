@@ -60,7 +60,7 @@ class PDFRenamerThread(QThread):
             renamed_files = []
             # Labels that indicate where to stop reading extra title lines
             cutoffs = ["Type/Type:", "Coverage/Couverture:",
-                       "Product/Produit:", "Demo/Group Cible:", "Advertiser/Annonceur:", "Contact Name/Nom Du contact:", 
+                       "Product/Produit:", "Demo/Group Cible:", "Advertiser/Annonceur:", "Contact Name/Nom du contact:", 
                        "Revenue Type/Type de revenu:", "Sec. Demo/Cible secondaire:"]
             # List all PDF files in folder
             pdf_files = [f for f in os.listdir(self.folder) if f.lower().endswith('.pdf')]
