@@ -4,7 +4,7 @@ PyInstaller spec file for PDF Renamer Tool v2.4,
 onefile build with embedded version, icon, and PyQt5 resources.
 """
 import sys
-from PyInstaller.utils.hooks import collect_all
+from PyInstaller.utils.hooks import collect_all, collect_submodules
 
 block_cipher = None
 
@@ -17,7 +17,11 @@ a = Analysis(
     pathex=[],
     binaries=pyqt5_binaries,
     datas=[('pdf_renamer_icon.ico', '.'), ('version.txt', '.')] + pyqt5_datas,
-    hiddenimports=pyqt5_hiddenimports,
+    hiddenimports=(
+      pyqt5_hiddenimports
+      + collect_submodules('azure')
+      + collect_submodules('opentelemetry')
+    ),
     hookspath=[],
     runtime_hooks=[],
     excludes=[],
