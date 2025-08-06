@@ -21,7 +21,7 @@ a = Analysis(
       pyqt5_hiddenimports
       + collect_submodules('azure')
       + collect_submodules('opentelemetry')
-    ),
+    )
     hookspath=[],
     runtime_hooks=[],
     excludes=[],
