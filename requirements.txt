@@ -1,2 +1,12 @@
-azure-monitor-opentelemetry>=1.4
+# Core GUI + PDF processing
+PyQt5~=5.15.9
+pdfplumber>=0.10,<0.11
+
+# Telemetry
+azure-monitor-opentelemetry>=1.4,<2.0
 opentelemetry-api~=1.26
+opentelemetry-sdk~=1.26  # pulled transitively, but pinning keeps versions aligned
+
+# Build tool (only used in CI; harmless in local dev)
+pyinstaller>=6.0,<7.0
+
