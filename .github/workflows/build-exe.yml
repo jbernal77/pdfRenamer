@@ -22,7 +22,8 @@ jobs:
 
     - name: Install dependencies
       run: |
-        pip install pyinstaller PyQt5 pdfplumber
+        python -m pip install -U pip
+        pip install -r requirements.txt
 
     - name: Build EXE with icon
       run: pyinstaller pdf_renamer_tool_v2.4.spec
