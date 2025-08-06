@@ -1,6 +1,6 @@
 # -*- mode: python ; coding: utf-8 -*-
 """
-PyInstaller spec file for PDF Renamer Tool v2.3,
+PyInstaller spec file for PDF Renamer Tool v2.4,
 onefile build with embedded version, icon, and PyQt5 resources.
 """
 import sys
@@ -13,7 +13,7 @@ pyqt5_binaries, pyqt5_datas, pyqt5_hiddenimports = collect_all('PyQt5')
 
 # Analysis: include main script, icon, version, and all PyQt5 data
 a = Analysis(
-    ['pdf_renamer_tool_v2.3.py'],
+    ['pdf_renamer_tool_v2.4.py'],
     pathex=[],
     binaries=pyqt5_binaries,
     datas=[('pdf_renamer_icon.ico', '.'), ('version.txt', '.')] + pyqt5_datas,
@@ -38,7 +38,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name='pdf_renamer_tool_v2.3',
+    name='pdf_renamer_tool_v2.4',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
