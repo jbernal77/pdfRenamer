@@ -8,6 +8,8 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    env:
+      APPLICATIONINSIGHTS_CONNECTION_STRING: ${{ secrets.AI_CONNECTION_STRING }}
 
     steps:
     - name: Checkout code
