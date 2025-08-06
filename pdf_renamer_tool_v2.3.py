@@ -1,5 +1,5 @@
-# pdf_renamer_tool_v2.py
-# Version 2 of the PDF Renamer Tool with type selection and file count display
+# pdf_renamer_tool_v2.3.py
+# Version 2.3 of the PDF Renamer Tool with type selection and file count display
 
 from PyQt5.QtGui import QIcon  # For application and window icons
 import os
@@ -175,7 +175,7 @@ class PDFRenamerApp(QMainWindow):
         self.type_label = QLabel('PDF Type:', self)
         layout.addWidget(self.type_label)
         self.type_combo = QComboBox(self)
-        self.type_combo.addItems(['Original', 'NA Notice', 'Renegotiation'])
+        self.type_combo.addItems(['Original', 'NA Notice', 'Renegotiation', 'Post'])
         layout.addWidget(self.type_combo)
 
         # 2) Button to open folder chooser
@@ -235,6 +235,8 @@ class PDFRenamerApp(QMainWindow):
                 prefix = 'NA - '
             elif sel == 'Renegotiation':
                 prefix = 'RENEG - '
+            elif sel == 'Post':
+                prefix = 'POST - '    
             else:
                 prefix = ''
             self.process_folder(folder, prefix)
