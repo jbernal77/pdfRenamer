@@ -1,5 +1,5 @@
-# pdf_renamer_tool_v2.3.py
-# Version 2.3 of the PDF Renamer Tool with type selection and file count display
+# pdf_renamer_tool_v2.4.py
+# Version 2.4 of the PDF Renamer Tool with type selection and file count display
 
 from PyQt5.QtGui import QIcon  # For application and window icons
 import os
@@ -15,7 +15,29 @@ from PyQt5.QtWidgets import (
     QComboBox  # Dropdown for selecting PDF type
 )
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
+# ---- Telemetry setup ----------------------------------------
+import os
+from azure.monitor.opentelemetry import configure_azure_monitor
+from opentelemetry import metrics
 
+configure_azure_monitor(
+    connection_string=os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING", "")
+)
+
+meter = metrics.get_meter("pdf-renamer", "2.4.0")
+
+pdf_counter = meter.create_counter(
+    name="pdfs_renamed",
+    unit="1",
+    description="Total PDFs renamed per batch"
+)
+
+option_counter = meter.create_counter(
+    name="rename_option",
+    unit="1",
+    description="Option label per batch"
+)
+# -------------------------------------------------------------
 
 def sanitize_filename(name):
     """
@@ -136,7 +158,21 @@ class PDFRenamerThread(QThread):
                 writer.writerow(["Original Filename", "New Filename", "Status"])
                 for row in renamed_files:
                     writer.writerow(row)
+            
+            # ---- Telemetry counters ---------------------------------
+            # total = number of PDFs processed in this run
+            pdf_counter.add(total)
+            
+            # Translate the prefix back to a clean label
+            option_label = (self.prefix or "ORIGINAL").split('-')[0].strip()
+            # e.g.  "POST - " → "POST", "" → "ORIGINAL"
 
+            option_counter.add(
+                total,
+                {"option": option_label}
+            )
+            # ----------------------------------------------------------
+            
             # Signal completion with the log file path
             self.finished_signal.emit(log_path)
 
