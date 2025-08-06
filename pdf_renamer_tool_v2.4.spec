@@ -18,10 +18,10 @@ a = Analysis(
     binaries=pyqt5_binaries,
     datas=[('pdf_renamer_icon.ico', '.'), ('version.txt', '.')] + pyqt5_datas,
     hiddenimports=(
-      pyqt5_hiddenimports
-      + collect_submodules('azure')
-      + collect_submodules('opentelemetry')
-    )
+        pyqt5_hiddenimports
+        + collect_submodules('azure')
+        + collect_submodules('opentelemetry')
+    ),
     hookspath=[],
     runtime_hooks=[],
     excludes=[],
