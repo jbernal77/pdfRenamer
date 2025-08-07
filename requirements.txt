@@ -1,0 +1,9 @@
+# Core dependencies
+PyQt5==5.15.10
+pdfplumber==0.10.3
+pyinstaller==6.3.0
+
+# Azure telemetry dependencies
+azure-monitor-opentelemetry==1.2.0
+opentelemetry-api==1.21.0
+opentelemetry-sdk==1.21.0

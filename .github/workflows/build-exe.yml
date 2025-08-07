@@ -8,7 +8,7 @@ on:
 jobs:
   build:
     runs-on: windows-latest
-
+    
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
@@ -20,14 +20,21 @@ jobs:
 
     - name: Install dependencies
       run: |
-        pip install pyinstaller PyQt5 pdfplumber
+        python -m pip install -U pip
+        pip install -r requirements.txt
+        
+    - name: Inject connection string
+      shell: pwsh
+      run: |
+        (Get-Content pdf_renamer_tool_v2.4.py -Raw -Encoding UTF8) `
+          -replace '__REPLACE_ME__', '${{ secrets.AI_CONNECTION_STRING }}' |
+          Set-Content pdf_renamer_tool_v2.4.py -Encoding UTF8 -NoNewline
 
     - name: Build EXE with icon
-      run: pyinstaller pdf_renamer_tool_v2.3.spec
+      run: pyinstaller pdf_renamer_tool_v2.4.spec
 
     - name: Upload EXE as artifact
       uses: actions/upload-artifact@v4
       with:
         name: pdf-renamer-tool
-        path: dist/pdf_renamer_tool_v2.3.exe
-
+        path: dist/pdf_renamer_tool_v2.4.exe
