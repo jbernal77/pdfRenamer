@@ -23,13 +23,16 @@ jobs:
         python -m pip install -U pip
         pip install -r requirements.txt
         
-    - name: Inject connection string        # <-- new
+    - name: Inject connection string
+      shell: pwsh
       run: |
         $placeholder = '__REPLACE_ME__'
-        $cs = '${{ secrets.AI_CONNECTION_STRING }}'
-        (Get-Content pdf_renamer_tool_v2.4.py) `
-          -replace $placeholder, $cs `
-          | Set-Content pdf_renamer_tool_v2.4.py
+        $cs = @'
+        ${{ secrets.AI_CONNECTION_STRING }}
+        '@
+        (Get-Content pdf_renamer_tool_v2.4.py -Raw) `
+          -replace [regex]::Escape($placeholder), $cs |
+          Set-Content pdf_renamer_tool_v2.4.py -Encoding UTF8
 
     - name: Build EXE with icon
       run: pyinstaller pdf_renamer_tool_v2.4.spec
