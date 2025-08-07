@@ -16,27 +16,31 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
 # ---- Telemetry setup ----------------------------------------
-import os
-from azure.monitor.opentelemetry import configure_azure_monitor
-from opentelemetry import metrics
+APPINSIGHTS_CONN_STRING = "__REPLACE_ME__"
 
-configure_azure_monitor(
-    connection_string=os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING", "")
-)
+try:
+    from azure.monitor.opentelemetry import configure_azure_monitor
+    from opentelemetry import metrics
 
-meter = metrics.get_meter("pdf-renamer", "2.4.0")
+    if APPINSIGHTS_CONN_STRING.startswith("__REPLACE_ME__"):
+        raise ValueError("Connection string not embedded")
 
-pdf_counter = meter.create_counter(
-    name="pdfs_renamed",
-    unit="1",
-    description="Total PDFs renamed per batch"
-)
+    configure_azure_monitor(connection_string=APPINSIGHTS_CONN_STRING)
 
-option_counter = meter.create_counter(
-    name="rename_option",
-    unit="1",
-    description="Option label per batch"
-)
+    _meter = metrics.get_meter("pdf-renamer", "2.4.0")
+    pdf_counter = _meter.create_counter(
+        name="pdfs_renamed",
+        unit="1",
+        description="Total PDFs renamed per batch",
+    )
+    option_counter = _meter.create_counter(
+        name="rename_option",
+        unit="1",
+        description="Option label per batch",
+    )
+except Exception as ex:  # pragma: no cover – telemetry must never break the app
+    print(f"Telemetry disabled – {ex}", file=sys.stderr)
+    pdf_counter = option_counter = None
 # -------------------------------------------------------------
 
 def sanitize_filename(name):
@@ -160,17 +164,9 @@ class PDFRenamerThread(QThread):
                     writer.writerow(row)
             
             # ---- Telemetry counters ---------------------------------
-            # total = number of PDFs processed in this run
-            pdf_counter.add(total)
-            
-            # Translate the prefix back to a clean label
-            option_label = (self.prefix or "ORIGINAL").split('-')[0].strip()
-            # e.g.  "POST - " → "POST", "" → "ORIGINAL"
-
-            option_counter.add(
-                total,
-                {"option": option_label}
-            )
+            if pdf_counter and option_counter:
+                pdf_counter.add(total)
+                option_counter.add(total, {"option": (self.prefix or "ORIGINAL").split('-')[0].strip()})
             # ----------------------------------------------------------
             
             # Signal completion with the log file path
