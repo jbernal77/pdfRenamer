@@ -8,9 +8,7 @@ on:
 jobs:
   build:
     runs-on: windows-latest
-    env:
-      APPLICATIONINSIGHTS_CONNECTION_STRING: ${{ secrets.AI_CONNECTION_STRING }}
-
+    
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
@@ -24,6 +22,14 @@ jobs:
       run: |
         python -m pip install -U pip
         pip install -r requirements.txt
+        
+    - name: Inject connection string        # <-- new
+      run: |
+        $placeholder = '__REPLACE_ME__'
+        $cs = '${{ secrets.AI_CONNECTION_STRING }}'
+        (Get-Content pdf_renamer_tool_v2.4.py) `
+          -replace $placeholder, $cs `
+          | Set-Content pdf_renamer_tool_v2.4.py
 
     - name: Build EXE with icon
       run: pyinstaller pdf_renamer_tool_v2.4.spec
