@@ -26,46 +26,9 @@ jobs:
     - name: Inject connection string
       shell: pwsh
       run: |
-        $placeholder = '__REPLACE_ME__'
-        $cs = '${{ secrets.AI_CONNECTION_STRING }}'
-        
-        # Debug: Check if secret exists (without exposing it)
-        if ([string]::IsNullOrEmpty($cs.Trim())) {
-          Write-Error "AI_CONNECTION_STRING secret is empty or not set"
-          exit 1
-        }
-        
-        Write-Host "Secret length: $($cs.Length)"
-        
-        # Debug: Check if placeholder exists in file
-        $content = Get-Content pdf_renamer_tool_v2.4.py -Raw -Encoding UTF8
-        if (-not $content.Contains($placeholder)) {
-          Write-Error "Placeholder '$placeholder' not found in Python file"
-          exit 1
-        }
-        
-        Write-Host "Placeholder found in file"
-        
-        # Perform replacement - escape special regex characters in connection string
-        $escapedCs = [regex]::Escape($cs)
-        $newContent = $content -replace [regex]::Escape($placeholder), $cs
-        
-        # Write back to file
-        $newContent | Set-Content pdf_renamer_tool_v2.4.py -Encoding UTF8 -NoNewline
-          
-        # Verify replacement worked
-        $verifyContent = Get-Content pdf_renamer_tool_v2.4.py -Raw -Encoding UTF8
-        if ($verifyContent.Contains($placeholder)) {
-          Write-Error "Replacement failed - placeholder still exists"
-          exit 1
-        }
-        
-        if (-not $verifyContent.Contains('InstrumentationKey=')) {
-          Write-Error "Replacement failed - connection string not found"
-          exit 1
-        }
-        
-        Write-Host "Connection string successfully injected"
+        (Get-Content pdf_renamer_tool_v2.4.py -Raw -Encoding UTF8) `
+          -replace '__REPLACE_ME__', '${{ secrets.AI_CONNECTION_STRING }}' |
+          Set-Content pdf_renamer_tool_v2.4.py -Encoding UTF8 -NoNewline
 
     - name: Build EXE with icon
       run: pyinstaller pdf_renamer_tool_v2.4.spec
