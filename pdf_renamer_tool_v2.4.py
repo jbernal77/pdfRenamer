@@ -25,78 +25,20 @@ option_counter = None
 def setup_telemetry():
     global pdf_counter, option_counter
     
-    print("=== TELEMETRY DEBUG START ===", file=sys.stderr)
-    
-    # Let's examine the connection string in detail
-    placeholder = "__REPLACE_ME__"
-    
-    print(f"Connection string repr: {repr(APPINSIGHTS_CONN_STRING)}", file=sys.stderr)
-    print(f"Connection string length: {len(APPINSIGHTS_CONN_STRING)}", file=sys.stderr)
-    print(f"Placeholder repr: {repr(placeholder)}", file=sys.stderr)
-    print(f"Placeholder length: {len(placeholder)}", file=sys.stderr)
-    
-    # Character-by-character comparison for first 20 chars
-    print("First 20 characters comparison:", file=sys.stderr)
-    for i in range(min(20, len(APPINSIGHTS_CONN_STRING))):
-        char = APPINSIGHTS_CONN_STRING[i]
-        print(f"  [{i}]: '{char}' (ord: {ord(char)})", file=sys.stderr)
-    
-    # Check exact equality
-    is_equal = (APPINSIGHTS_CONN_STRING == placeholder)
-    contains_placeholder = (placeholder in APPINSIGHTS_CONN_STRING)
-    
-    print(f"Equals check: {is_equal}", file=sys.stderr)
-    print(f"Contains check: {contains_placeholder}", file=sys.stderr)
-    
-    # If it contains the placeholder, let's see where
-    if contains_placeholder:
-        index = APPINSIGHTS_CONN_STRING.find(placeholder)
-        print(f"Placeholder found at index: {index}", file=sys.stderr)
-        if index >= 0:
-            before = APPINSIGHTS_CONN_STRING[:index]
-            after = APPINSIGHTS_CONN_STRING[index + len(placeholder):]
-            print(f"Before placeholder: {repr(before)}", file=sys.stderr)
-            print(f"After placeholder: {repr(after)}", file=sys.stderr)
-    
     try:
-        # Use a simpler, more explicit check
-        if len(APPINSIGHTS_CONN_STRING) < 50:  # Real connection string should be much longer
-            print("❌ Connection string too short - likely still placeholder", file=sys.stderr)
+        # Check if connection string was properly replaced and is valid
+        if (len(APPINSIGHTS_CONN_STRING) < 50 or 
+            not APPINSIGHTS_CONN_STRING.startswith("InstrumentationKey=")):
             return False
             
-        if not APPINSIGHTS_CONN_STRING.startswith("InstrumentationKey="):
-            print("❌ Connection string doesn't start with InstrumentationKey=", file=sys.stderr)
-            return False
-            
-        print("✓ Connection string passes basic validation", file=sys.stderr)
-        
-        # Try importing required modules
-        print("Importing Azure modules...", file=sys.stderr)
-        try:
-            from azure.monitor.opentelemetry import configure_azure_monitor
-            print("✓ azure.monitor.opentelemetry imported successfully", file=sys.stderr)
-        except ImportError as e:
-            print(f"❌ Failed to import azure.monitor.opentelemetry: {e}", file=sys.stderr)
-            return False
-            
-        try:
-            from opentelemetry import metrics
-            print("✓ opentelemetry.metrics imported successfully", file=sys.stderr)
-        except ImportError as e:
-            print(f"❌ Failed to import opentelemetry.metrics: {e}", file=sys.stderr)
-            return False
+        from azure.monitor.opentelemetry import configure_azure_monitor
+        from opentelemetry import metrics
 
         # Configure Azure Monitor
-        print("Configuring Azure Monitor...", file=sys.stderr)
         configure_azure_monitor(connection_string=APPINSIGHTS_CONN_STRING)
-        print("✓ Azure Monitor configured successfully", file=sys.stderr)
 
         # Create meter and counters
-        print("Creating telemetry meter...", file=sys.stderr)
         _meter = metrics.get_meter("pdf-renamer", "2.4.0")
-        print("✓ Meter created successfully", file=sys.stderr)
-        
-        print("Creating counters...", file=sys.stderr)
         pdf_counter = _meter.create_counter(
             name="pdfs_renamed",
             unit="1",
@@ -108,28 +50,14 @@ def setup_telemetry():
             description="Option label per batch",
         )
         
-        print("✓ Telemetry counters created successfully", file=sys.stderr)
-        print("=== TELEMETRY DEBUG END ===", file=sys.stderr)
         return True
         
-    except ImportError as e:
-        print(f"❌ Import error: {e}", file=sys.stderr)
-        print("=== TELEMETRY DEBUG END ===", file=sys.stderr)
-        return False
-    except Exception as e:
-        print(f"❌ Unexpected error: {e}", file=sys.stderr)
-        print(f"❌ Error type: {type(e).__name__}", file=sys.stderr)
-        print("=== TELEMETRY DEBUG END ===", file=sys.stderr)
+    except Exception as ex:  # pragma: no cover – telemetry must never break the app
+        print(f"Telemetry disabled – {ex}", file=sys.stderr)
         return False
 
 # Initialize telemetry
 telemetry_enabled = setup_telemetry()
-
-# Temporary test - remove after confirming telemetry works
-if telemetry_enabled:
-    print("🎉 Telemetry is enabled and ready", file=sys.stderr)
-else:
-    print("💥 Telemetry is disabled", file=sys.stderr)
 # -------------------------------------------------------------
 
 def sanitize_filename(name):
