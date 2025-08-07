@@ -18,29 +18,55 @@ from PyQt5.QtCore import Qt, QThread, pyqtSignal
 # ---- Telemetry setup ----------------------------------------
 APPINSIGHTS_CONN_STRING = "__REPLACE_ME__"
 
-try:
-    from azure.monitor.opentelemetry import configure_azure_monitor
-    from opentelemetry import metrics
+# Debug logging for telemetry setup
+def setup_telemetry():
+    global pdf_counter, option_counter
+    pdf_counter = None
+    option_counter = None
+    
+    try:
+        # Check if connection string was properly replaced
+        if not APPINSIGHTS_CONN_STRING or APPINSIGHTS_CONN_STRING == "__REPLACE_ME__":
+            print("Telemetry disabled: Connection string not configured", file=sys.stderr)
+            return False
+            
+        # Check if connection string looks valid (basic format check)
+        if not APPINSIGHTS_CONN_STRING.startswith("InstrumentationKey="):
+            print(f"Telemetry disabled: Invalid connection string format", file=sys.stderr)
+            return False
+            
+        from azure.monitor.opentelemetry import configure_azure_monitor
+        from opentelemetry import metrics
 
-    if APPINSIGHTS_CONN_STRING.startswith("__REPLACE_ME__"):
-        raise ValueError("Connection string not embedded")
+        # Configure Azure Monitor
+        configure_azure_monitor(connection_string=APPINSIGHTS_CONN_STRING)
+        print("Azure Monitor configured successfully", file=sys.stderr)
 
-    configure_azure_monitor(connection_string=APPINSIGHTS_CONN_STRING)
+        # Create meter and counters
+        _meter = metrics.get_meter("pdf-renamer", "2.4.0")
+        pdf_counter = _meter.create_counter(
+            name="pdfs_renamed",
+            unit="1",
+            description="Total PDFs renamed per batch",
+        )
+        option_counter = _meter.create_counter(
+            name="rename_option",
+            unit="1",
+            description="Option label per batch",
+        )
+        
+        print("Telemetry counters created successfully", file=sys.stderr)
+        return True
+        
+    except ImportError as e:
+        print(f"Telemetry disabled: Missing dependencies - {e}", file=sys.stderr)
+        return False
+    except Exception as e:
+        print(f"Telemetry disabled: Setup error - {e}", file=sys.stderr)
+        return False
 
-    _meter = metrics.get_meter("pdf-renamer", "2.4.0")
-    pdf_counter = _meter.create_counter(
-        name="pdfs_renamed",
-        unit="1",
-        description="Total PDFs renamed per batch",
-    )
-    option_counter = _meter.create_counter(
-        name="rename_option",
-        unit="1",
-        description="Option label per batch",
-    )
-except Exception as ex:  # pragma: no cover – telemetry must never break the app
-    print(f"Telemetry disabled – {ex}", file=sys.stderr)
-    pdf_counter = option_counter = None
+# Initialize telemetry
+telemetry_enabled = setup_telemetry()
 # -------------------------------------------------------------
 
 def sanitize_filename(name):
