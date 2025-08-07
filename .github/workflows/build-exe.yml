@@ -30,9 +30,32 @@ jobs:
         $cs = @'
         ${{ secrets.AI_CONNECTION_STRING }}
         '@
-        (Get-Content pdf_renamer_tool_v2.4.py -Raw) `
-          -replace [regex]::Escape($placeholder), $cs |
+        
+        # Debug: Check if secret exists (without exposing it)
+        if ([string]::IsNullOrEmpty($cs.Trim())) {
+          Write-Error "AI_CONNECTION_STRING secret is empty or not set"
+          exit 1
+        }
+        
+        # Debug: Check if placeholder exists in file
+        $content = Get-Content pdf_renamer_tool_v2.4.py -Raw
+        if (-not $content.Contains($placeholder)) {
+          Write-Error "Placeholder '$placeholder' not found in Python file"
+          exit 1
+        }
+        
+        # Perform replacement
+        $content -replace [regex]::Escape($placeholder), $cs |
           Set-Content pdf_renamer_tool_v2.4.py -Encoding UTF8
+          
+        # Verify replacement worked
+        $newContent = Get-Content pdf_renamer_tool_v2.4.py -Raw
+        if ($newContent.Contains($placeholder)) {
+          Write-Error "Replacement failed - placeholder still exists"
+          exit 1
+        }
+        
+        Write-Host "Connection string successfully injected"
 
     - name: Build EXE with icon
       run: pyinstaller pdf_renamer_tool_v2.4.spec
@@ -42,4 +65,3 @@ jobs:
       with:
         name: pdf-renamer-tool
         path: dist/pdf_renamer_tool_v2.4.exe
-
