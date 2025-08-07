@@ -71,6 +71,11 @@ def setup_telemetry():
 
 # Initialize telemetry
 telemetry_enabled = setup_telemetry()
+# Temporary test - remove after confirming telemetry works
+if telemetry_enabled:
+    print("✓ Telemetry is enabled and ready", file=sys.stderr)
+else:
+    print("✗ Telemetry is disabled", file=sys.stderr)
 # -------------------------------------------------------------
 
 def sanitize_filename(name):
