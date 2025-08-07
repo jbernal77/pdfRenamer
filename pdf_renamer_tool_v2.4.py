@@ -25,29 +25,56 @@ option_counter = None
 def setup_telemetry():
     global pdf_counter, option_counter
     
+    print("=== TELEMETRY DEBUG START ===", file=sys.stderr)
+    print(f"Connection string length: {len(APPINSIGHTS_CONN_STRING)}", file=sys.stderr)
+    print(f"Connection string starts with: '{APPINSIGHTS_CONN_STRING[:20]}...'", file=sys.stderr)
+    
     try:
         # Check if connection string was properly replaced
         if not APPINSIGHTS_CONN_STRING or APPINSIGHTS_CONN_STRING.strip() == "__REPLACE_ME__":
-            print("Telemetry disabled: Connection string not configured", file=sys.stderr)
+            print("❌ Connection string not configured - still contains placeholder", file=sys.stderr)
             return False
             
         # Check if connection string looks valid (more flexible format check)
         conn_str = APPINSIGHTS_CONN_STRING.strip()
+        print(f"Stripped connection string length: {len(conn_str)}", file=sys.stderr)
+        
         if not (conn_str.startswith("InstrumentationKey=") or 
                 conn_str.startswith("ConnectionString=") or
                 "InstrumentationKey=" in conn_str):
-            print(f"Telemetry disabled: Invalid connection string format", file=sys.stderr)
+            print(f"❌ Invalid connection string format", file=sys.stderr)
+            print(f"Expected format: InstrumentationKey=... or ConnectionString=...", file=sys.stderr)
+            return False
+        
+        print("✓ Connection string format looks valid", file=sys.stderr)
+        
+        # Try importing required modules
+        print("Importing Azure modules...", file=sys.stderr)
+        try:
+            from azure.monitor.opentelemetry import configure_azure_monitor
+            print("✓ azure.monitor.opentelemetry imported successfully", file=sys.stderr)
+        except ImportError as e:
+            print(f"❌ Failed to import azure.monitor.opentelemetry: {e}", file=sys.stderr)
             return False
             
-        from azure.monitor.opentelemetry import configure_azure_monitor
-        from opentelemetry import metrics
+        try:
+            from opentelemetry import metrics
+            print("✓ opentelemetry.metrics imported successfully", file=sys.stderr)
+        except ImportError as e:
+            print(f"❌ Failed to import opentelemetry.metrics: {e}", file=sys.stderr)
+            return False
 
         # Configure Azure Monitor
+        print("Configuring Azure Monitor...", file=sys.stderr)
         configure_azure_monitor(connection_string=APPINSIGHTS_CONN_STRING)
-        print("Azure Monitor configured successfully", file=sys.stderr)
+        print("✓ Azure Monitor configured successfully", file=sys.stderr)
 
         # Create meter and counters
+        print("Creating telemetry meter...", file=sys.stderr)
         _meter = metrics.get_meter("pdf-renamer", "2.4.0")
+        print("✓ Meter created successfully", file=sys.stderr)
+        
+        print("Creating counters...", file=sys.stderr)
         pdf_counter = _meter.create_counter(
             name="pdfs_renamed",
             unit="1",
@@ -59,23 +86,28 @@ def setup_telemetry():
             description="Option label per batch",
         )
         
-        print("Telemetry counters created successfully", file=sys.stderr)
+        print("✓ Telemetry counters created successfully", file=sys.stderr)
+        print("=== TELEMETRY DEBUG END ===", file=sys.stderr)
         return True
         
     except ImportError as e:
-        print(f"Telemetry disabled: Missing dependencies - {e}", file=sys.stderr)
+        print(f"❌ Import error: {e}", file=sys.stderr)
+        print("=== TELEMETRY DEBUG END ===", file=sys.stderr)
         return False
     except Exception as e:
-        print(f"Telemetry disabled: Setup error - {e}", file=sys.stderr)
+        print(f"❌ Unexpected error: {e}", file=sys.stderr)
+        print(f"❌ Error type: {type(e).__name__}", file=sys.stderr)
+        print("=== TELEMETRY DEBUG END ===", file=sys.stderr)
         return False
 
 # Initialize telemetry
 telemetry_enabled = setup_telemetry()
+
 # Temporary test - remove after confirming telemetry works
 if telemetry_enabled:
-    print("✓ Telemetry is enabled and ready", file=sys.stderr)
+    print("🎉 Telemetry is enabled and ready", file=sys.stderr)
 else:
-    print("✗ Telemetry is disabled", file=sys.stderr)
+    print("💥 Telemetry is disabled", file=sys.stderr)
 # -------------------------------------------------------------
 
 def sanitize_filename(name):
