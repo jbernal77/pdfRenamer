@@ -15,8 +15,8 @@ from PyQt5.QtWidgets import (
     QComboBox  # Dropdown for selecting PDF type
 )
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
-#----- Privacy Notice -----------------------------------------
 
+#----- Privacy Notice -----------------------------------------
 def check_first_run():
     """
     Check if this is the first time the application is run.
@@ -67,6 +67,7 @@ def show_privacy_notice():
 # Check for first run and show privacy notice
 if check_first_run():
     show_privacy_notice()
+    
 # ---- Telemetry setup ----------------------------------------
 APPINSIGHTS_CONN_STRING = "__REPLACE_ME__"
 
@@ -110,7 +111,7 @@ def setup_telemetry():
 
 # Initialize telemetry
 telemetry_enabled = setup_telemetry()
-# -------------------------------------------------------------
+# ---- Helper Functions ----------------------------------------------------
 
 def sanitize_filename(name):
     """
@@ -129,7 +130,7 @@ def strip_after_label(text, cutoffs):
             return text.split(cutoff)[0].strip()
     return text.strip()
 
-
+#---- Background Worker thread -----------------------------------------------
 class PDFRenamerThread(QThread):
     # Signals to communicate progress, logs, and results back to the UI thread
     progress_signal = pyqtSignal(int, int)       # current index, total count
@@ -142,7 +143,8 @@ class PDFRenamerThread(QThread):
         super().__init__()
         self.folder = folder       # Folder containing PDFs to rename
         self.prefix = prefix       # Prefix to add based on user selection
-
+    
+    #---- Main Loop ----------------------------------------------------------
     def run(self):
         """
         Process each PDF in the folder:
@@ -153,6 +155,9 @@ class PDFRenamerThread(QThread):
         """
         try:
             renamed_files = []
+            success_count = 0
+            error_count = 0
+            
             # Labels that indicate where to stop reading extra title lines
             cutoffs = ["Type/Type:", "Coverage/Couverture:",
                        "Product/Produit:", "Demo/Group Cible:", "Advertiser/Annonceur:", "Contact Name/Nom du contact:", 
@@ -215,6 +220,7 @@ class PDFRenamerThread(QThread):
                     os.rename(filepath, new_path)
                     renamed_files.append((filename, new_name, "Success"))
                     self.file_signal.emit(filename, new_name, "Success")
+                    success_count += 1
 
                 except Exception as e:
                     # Log any errors encountered during processing
@@ -222,7 +228,8 @@ class PDFRenamerThread(QThread):
                     self.log_signal.emit(f"  {error_msg}")
                     renamed_files.append((filename, "", error_msg))
                     self.file_signal.emit(filename, "", error_msg)
-
+                    error_count += 1
+                    
             # After processing all files, write a CSV log
             log_path = os.path.join(
                 self.folder, f"rename_log_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv")
@@ -233,9 +240,12 @@ class PDFRenamerThread(QThread):
                     writer.writerow(row)
             
             # ---- Telemetry counters ---------------------------------
-            if pdf_counter and option_counter:
+            if pdf_counter and option_counter and error_counter:
                 pdf_counter.add(total)
+                if total > 0:
                 option_counter.add(total, {"option": (self.prefix or "ORIGINAL").split('-')[0].strip()})
+                if error_count > 0:
+                    error_counter.add(error_count)
             # ----------------------------------------------------------
             
             # Signal completion with the log file path
@@ -245,7 +255,7 @@ class PDFRenamerThread(QThread):
             # Catch any top-level errors
             self.error_signal.emit(f"An error occurred: {str(e)}")
 
-
+#---- Main GUI Application ----------------------------------------------------
 class PDFRenamerApp(QMainWindow):
     """
     Main application window:
@@ -263,6 +273,7 @@ class PDFRenamerApp(QMainWindow):
         self.setWindowIcon(QIcon(ico_path))
         self.initUI()
 
+    #---- UI -------------------------------------------------------
     def initUI(self):
         # Window properties
         self.setWindowTitle('PDF Renamer Tool')
@@ -305,6 +316,7 @@ class PDFRenamerApp(QMainWindow):
 
         self.show()
 
+    #---- UI Helpers ------------------------------------------------
     def select_folder(self):
         """
         Open a folder dialog, count PDFs, confirm, and start processing with prefix.
@@ -396,7 +408,7 @@ class PDFRenamerApp(QMainWindow):
         self.log_text.append(f"ERROR: {error_message}")
         QMessageBox.critical(self, 'Error', error_message)
 
-
+#---- Global exception hook ------------------------------------------
 def excepthook(exc_type, exc_value, exc_traceback):
     """
     Global exception hook to catch and log uncaught exceptions,
