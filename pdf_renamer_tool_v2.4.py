@@ -243,7 +243,7 @@ class PDFRenamerThread(QThread):
             if pdf_counter and option_counter and error_counter:
                 pdf_counter.add(total)
                 if total > 0:
-                option_counter.add(total, {"option": (self.prefix or "ORIGINAL").split('-')[0].strip()})
+                    option_counter.add(total, {"option": (self.prefix or "ORIGINAL").split('-')[0].strip()})
                 if error_count > 0:
                     error_counter.add(error_count)
             # ----------------------------------------------------------
