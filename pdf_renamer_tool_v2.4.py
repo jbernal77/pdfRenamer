@@ -18,20 +18,24 @@ from PyQt5.QtCore import Qt, QThread, pyqtSignal
 # ---- Telemetry setup ----------------------------------------
 APPINSIGHTS_CONN_STRING = "__REPLACE_ME__"
 
-# Debug logging for telemetry setup
+# Initialize global variables
+pdf_counter = None
+option_counter = None
+
 def setup_telemetry():
     global pdf_counter, option_counter
-    pdf_counter = None
-    option_counter = None
     
     try:
         # Check if connection string was properly replaced
-        if not APPINSIGHTS_CONN_STRING or APPINSIGHTS_CONN_STRING == "__REPLACE_ME__":
+        if not APPINSIGHTS_CONN_STRING or APPINSIGHTS_CONN_STRING.strip() == "__REPLACE_ME__":
             print("Telemetry disabled: Connection string not configured", file=sys.stderr)
             return False
             
-        # Check if connection string looks valid (basic format check)
-        if not APPINSIGHTS_CONN_STRING.startswith("InstrumentationKey="):
+        # Check if connection string looks valid (more flexible format check)
+        conn_str = APPINSIGHTS_CONN_STRING.strip()
+        if not (conn_str.startswith("InstrumentationKey=") or 
+                conn_str.startswith("ConnectionString=") or
+                "InstrumentationKey=" in conn_str):
             print(f"Telemetry disabled: Invalid connection string format", file=sys.stderr)
             return False
             
