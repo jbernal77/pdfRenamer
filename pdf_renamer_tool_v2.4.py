@@ -15,6 +15,58 @@ from PyQt5.QtWidgets import (
     QComboBox  # Dropdown for selecting PDF type
 )
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
+#----- Privacy Notice -----------------------------------------
+
+def check_first_run():
+    """
+    Check if this is the first time the application is run.
+    Creates a simple marker file to track this.
+    """
+    import tempfile
+    marker_file = os.path.join(tempfile.gettempdir(), "pdf_renamer_privacy_notice.txt")
+    
+    if not os.path.exists(marker_file):
+        # First run - show privacy notice
+        try:
+            with open(marker_file, "w") as f:
+                f.write("Privacy notice shown")
+            return True
+        except:
+            # If we can't write the file, show notice anyway to be safe
+            return True
+    return False
+
+def show_privacy_notice():
+    """
+    Show privacy notice dialog on first run.
+    """
+    from PyQt5.QtWidgets import QMessageBox, QApplication
+    
+    # Create a temporary QApplication if one doesn't exist yet
+    temp_app = None
+    if not QApplication.instance():
+        temp_app = QApplication([])
+    
+    msg = QMessageBox()
+    msg.setWindowTitle("PDF Renamer Tool - Privacy Notice")
+    msg.setIcon(QMessageBox.Information)
+    msg.setText("Privacy Notice")
+    msg.setInformativeText(
+        "This tool collects anonymous usage data to help improve the application.\n\n"
+        "No personal information or file contents are collected.\n\n"
+        "Click OK to continue using the tool."
+    )
+    msg.setStandardButtons(QMessageBox.Ok)
+    msg.exec_()
+    
+    # Clean up temporary app if we created one
+    if temp_app:
+        temp_app.quit()
+
+# Add this right before the telemetry setup section:
+# Check for first run and show privacy notice
+if check_first_run():
+    show_privacy_notice()
 # ---- Telemetry setup ----------------------------------------
 APPINSIGHTS_CONN_STRING = "__REPLACE_ME__"
 
