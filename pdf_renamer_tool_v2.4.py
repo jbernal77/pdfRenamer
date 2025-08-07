@@ -26,36 +26,49 @@ def setup_telemetry():
     global pdf_counter, option_counter
     
     print("=== TELEMETRY DEBUG START ===", file=sys.stderr)
-    print(f"Connection string length: {len(APPINSIGHTS_CONN_STRING)}", file=sys.stderr)
-    print(f"Connection string starts with: '{APPINSIGHTS_CONN_STRING[:20]}...'", file=sys.stderr)
     
-    # Check for exact placeholder match - CORRECTED
+    # Let's examine the connection string in detail
     placeholder = "__REPLACE_ME__"
-    print(f"Checking if equals placeholder: {APPINSIGHTS_CONN_STRING == placeholder}", file=sys.stderr)
-    print(f"Checking if contains placeholder: {placeholder in APPINSIGHTS_CONN_STRING}", file=sys.stderr)
+    
+    print(f"Connection string repr: {repr(APPINSIGHTS_CONN_STRING)}", file=sys.stderr)
+    print(f"Connection string length: {len(APPINSIGHTS_CONN_STRING)}", file=sys.stderr)
+    print(f"Placeholder repr: {repr(placeholder)}", file=sys.stderr)
+    print(f"Placeholder length: {len(placeholder)}", file=sys.stderr)
+    
+    # Character-by-character comparison for first 20 chars
+    print("First 20 characters comparison:", file=sys.stderr)
+    for i in range(min(20, len(APPINSIGHTS_CONN_STRING))):
+        char = APPINSIGHTS_CONN_STRING[i]
+        print(f"  [{i}]: '{char}' (ord: {ord(char)})", file=sys.stderr)
+    
+    # Check exact equality
+    is_equal = (APPINSIGHTS_CONN_STRING == placeholder)
+    contains_placeholder = (placeholder in APPINSIGHTS_CONN_STRING)
+    
+    print(f"Equals check: {is_equal}", file=sys.stderr)
+    print(f"Contains check: {contains_placeholder}", file=sys.stderr)
+    
+    # If it contains the placeholder, let's see where
+    if contains_placeholder:
+        index = APPINSIGHTS_CONN_STRING.find(placeholder)
+        print(f"Placeholder found at index: {index}", file=sys.stderr)
+        if index >= 0:
+            before = APPINSIGHTS_CONN_STRING[:index]
+            after = APPINSIGHTS_CONN_STRING[index + len(placeholder):]
+            print(f"Before placeholder: {repr(before)}", file=sys.stderr)
+            print(f"After placeholder: {repr(after)}", file=sys.stderr)
     
     try:
-        # Check if connection string was properly replaced
-        if (not APPINSIGHTS_CONN_STRING or 
-            APPINSIGHTS_CONN_STRING == "__REPLACE_ME__" or 
-            "__REPLACE_ME__" in APPINSIGHTS_CONN_STRING):
-            print("❌ Connection string not configured - still contains placeholder", file=sys.stderr)
+        # Use a simpler, more explicit check
+        if len(APPINSIGHTS_CONN_STRING) < 50:  # Real connection string should be much longer
+            print("❌ Connection string too short - likely still placeholder", file=sys.stderr)
             return False
             
-        print("✓ Connection string replacement successful", file=sys.stderr)
-        
-        # Check if connection string looks valid
-        conn_str = APPINSIGHTS_CONN_STRING.strip()
-        print(f"Stripped connection string length: {len(conn_str)}", file=sys.stderr)
-        
-        if not (conn_str.startswith("InstrumentationKey=") or 
-                conn_str.startswith("ConnectionString=") or
-                "InstrumentationKey=" in conn_str):
-            print(f"❌ Invalid connection string format", file=sys.stderr)
-            print(f"Expected format: InstrumentationKey=... or ConnectionString=...", file=sys.stderr)
+        if not APPINSIGHTS_CONN_STRING.startswith("InstrumentationKey="):
+            print("❌ Connection string doesn't start with InstrumentationKey=", file=sys.stderr)
             return False
-        
-        print("✓ Connection string format looks valid", file=sys.stderr)
+            
+        print("✓ Connection string passes basic validation", file=sys.stderr)
         
         # Try importing required modules
         print("Importing Azure modules...", file=sys.stderr)
