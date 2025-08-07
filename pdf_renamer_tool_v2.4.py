@@ -29,9 +29,15 @@ def setup_telemetry():
     print(f"Connection string length: {len(APPINSIGHTS_CONN_STRING)}", file=sys.stderr)
     print(f"Connection string starts with: '{APPINSIGHTS_CONN_STRING[:20]}...'", file=sys.stderr)
     
+    # Check for exact placeholder match
+    print(f"Checking if equals '__REPLACE_ME__': {APPINSIGHTS_CONN_STRING == '__REPLACE_ME__'}", file=sys.stderr)
+    print(f"Checking if contains '__REPLACE_ME__': {'__REPLACE_ME__' in APPINSIGHTS_CONN_STRING}", file=sys.stderr)
+    
     try:
-        # Check if connection string was properly replaced
-        if not APPINSIGHTS_CONN_STRING or APPINSIGHTS_CONN_STRING.strip() == "__REPLACE_ME__":
+        # More specific check - the connection string should not be empty and should not contain the placeholder
+        if (not APPINSIGHTS_CONN_STRING or 
+            APPINSIGHTS_CONN_STRING == "__REPLACE_ME__" or 
+            "__REPLACE_ME__" in APPINSIGHTS_CONN_STRING):
             print("❌ Connection string not configured - still contains placeholder", file=sys.stderr)
             return False
             
