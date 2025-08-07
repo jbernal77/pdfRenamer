@@ -76,7 +76,7 @@ pdf_counter = None
 option_counter = None
 
 def setup_telemetry():
-    global pdf_counter, option_counter
+    global pdf_counter, option_counter, error_counter
     
     try:
         # Check if connection string was properly replaced and is valid
@@ -101,6 +101,11 @@ def setup_telemetry():
             name="rename_option",
             unit="1",
             description="Option label per batch",
+        )
+        error_counter = _meter.create_counter(
+            name="pdfs_failed",
+            unit="1",
+            description="Total PDFs that failed to rename per batch",
         )
         
         return True
