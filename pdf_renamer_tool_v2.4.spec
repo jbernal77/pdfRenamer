@@ -1,6 +1,6 @@
 # -*- mode: python ; coding: utf-8 -*-
 """
-PyInstaller spec file for PDF Renamer Tool v2.4, 
+PyInstaller spec file for PDF Renamer Tool v2.4,
 onefile build with embedded version, icon, and PyQt5 resources.
 """
 import sys
@@ -28,13 +28,13 @@ a = Analysis(
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
     cipher=block_cipher,
-    noarchive=False,   # keep modules in the PYZ archive (usual default)
+    noarchive=False
 )
 
 # Build the Python bytecode archive
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 
-# Create the executable (exclude binaries here; COLLECT will add them)
+# Create a onefile executable
 exe = EXE(
     pyz,
     a.scripts,
@@ -51,5 +51,3 @@ exe = EXE(
     icon='pdf_renamer_icon.ico',
     version='version.txt'
 )
-
-
