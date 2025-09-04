@@ -8,13 +8,13 @@ on:
 jobs:
   build:
     runs-on: windows-latest
-
+    
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v3
 
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v4
       with:
         python-version: '3.10'
 
@@ -22,26 +22,19 @@ jobs:
       run: |
         python -m pip install -U pip
         pip install -r requirements.txt
-        pip install pyinstaller
-
+        
     - name: Inject connection string
       shell: pwsh
       run: |
-        (Get-Content pdf_renamer_tool_v2.4.py -Raw -Encoding UTF8) `
+        (Get-Content pdf_renamer_tool_v2.4.py -Raw -Encoding UTF8) 
           -replace '__REPLACE_ME__', '${{ secrets.AI_CONNECTION_STRING }}' |
           Set-Content pdf_renamer_tool_v2.4.py -Encoding UTF8 -NoNewline
 
-    - name: Build (PyInstaller spec, ONEDIR)
-      run: pyinstaller --clean --noconfirm pdf_renamer_tool_v2.4.spec
+    - name: Build EXE with icon
+      run: pyinstaller pdf_renamer_tool_v2.4.spec
 
-    - name: Show dist tree (debug)
-      shell: pwsh
-      run: |
-        Get-ChildItem -Recurse -Force dist | Select-Object FullName
-
-    - name: Upload artifact (onedir folder)
+    - name: Upload EXE as artifact
       uses: actions/upload-artifact@v4
       with:
-        name: pdf-renamer-onedir
-        path: dist/pdf_renamer_tool_v2.4/**
-        if-no-files-found: error
+        name: pdf-renamer-tool
+        path: dist/pdf_renamer_tool_v2.4.exe
