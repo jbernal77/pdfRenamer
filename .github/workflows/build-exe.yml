@@ -26,7 +26,7 @@ jobs:
     - name: Inject connection string
       shell: pwsh
       run: |
-        (Get-Content pdf_renamer_tool_v2.4.py -Raw -Encoding UTF8) 
+        (Get-Content pdf_renamer_tool_v2.4.py -Raw -Encoding UTF8) `
           -replace '__REPLACE_ME__', '${{ secrets.AI_CONNECTION_STRING }}' |
           Set-Content pdf_renamer_tool_v2.4.py -Encoding UTF8 -NoNewline
 
